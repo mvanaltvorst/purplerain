@@ -13,7 +13,9 @@ pub trait Updatable {
     fn update(&mut self);
 }
 
-#[derive(Copy, Clone, Debug)]
+// Drop defines a raindrop in the Scene.
+// TODO: make the drop a darker color when it's further away (z is lower)
+#[derive(Copy, Clone)]
 pub struct Drop {
     x: f32,
     y: f32,
@@ -27,16 +29,20 @@ impl Default for Drop {
     fn default() -> Drop {
         let xrange = Range::new(0.0f32, 800.0f32);
         let depthrange = Range::new(0.0f32, 8000.0f32);
-        let mut rng = rand::thread_rng();
-
         let yrange = Range::new(-500.0f32, -50.0f32);
 
+        let mut rng = rand::thread_rng();
+
+        // Used to calculate z
         let depth = depthrange.ind_sample(&mut rng);
-        let z = depth.cbrt(); // Cube root
+
+        // How far the drop is from the point of view
+        let z = depth.cbrt(); // Cube root of depth to favor low z values (drops far away)
+
         Drop {
             x: xrange.ind_sample(&mut rng),
             y: yrange.ind_sample(&mut rng),
-            width: map(z, 0.0, 20.0, 3.0, 10.0),
+            width: map(z, 0.0, 20.0, 3.0, 9.0),
             height: map(z, 0.0, 20.0, 20.0, 60.0),
             speed: map(z, 0.0, 20.0, 2.0, 8.0)
         }

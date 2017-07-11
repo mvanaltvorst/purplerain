@@ -35,6 +35,7 @@ impl Scene {
 
 impl event::EventHandler for Scene {
     fn update(&mut self, _ctx: &mut Context, _dt: Duration) -> GameResult<()> {
+        // Update all the drops (position etc.)
         for drop in self.drops.iter_mut() {
             drop.update();
         }
@@ -57,13 +58,14 @@ impl event::EventHandler for Scene {
 
 fn main() {
     let c = conf::Conf::new();
-    let ctx = &mut Context::load_from_conf("purple rain", "ggez", c).unwrap();
+    let ctx = &mut Context::load_from_conf("Purple Rain", "ggez", c).unwrap();
     let scene = &mut Scene::new(ctx).unwrap();
 
     match event::run(ctx, scene) {
         Ok(_) => (),
         Err(e) => {
             println!("error: {}", e);
+            std::process::exit(1);
         }
     }
 }
