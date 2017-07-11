@@ -53,6 +53,8 @@ impl Updatable for Drop {
     fn update(&mut self) {
         self.y += self.speed;
 
+        //TODO: use window height instead of y
+        //TODO: use a global RNG instead of using thread_rng all the time. Maybe make it a field of `Scene`?
         if self.y > 600.0 {
             let mut rng = rand::thread_rng();
             let yrange = Range::new(-500.0f32, -50.0f32);
@@ -63,8 +65,8 @@ impl Updatable for Drop {
 
 impl Drawable for Drop {
     fn draw(&self, ctx: &mut Context) {
+        //TODO: purple color
         let rect = graphics::Rect::new(self.x, self.y, self.width, self.height);
-        // let rect = graphics::Rect::new(2.0, 2.0, )
         graphics::rectangle(ctx, graphics::DrawMode::Fill, rect).expect("Couldn't draw rectangle");
     }
 }
