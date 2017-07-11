@@ -71,6 +71,11 @@ impl Drawable for Drop {
     }
 }
 
+
+// Map scales the number n in the range slow..shigh to its relative position in the range tlow..thigh (inclusive)
+// Example: n = 3, slow = 3, shigh = 6, tlow = 7, thigh = 13 -> output: 7
+// n is at the bottom of the range 3..6, so it will be at the bottom of the range 7..13
+// If n was 6 in this example, the output would be 13, because it's the maximum in the range of 3..6
 fn map(n: f32, slow: f32, shigh: f32, tlow: f32, thigh: f32) -> f32 {
     (n - slow)/(shigh-slow)*(thigh-tlow) + tlow
 }
