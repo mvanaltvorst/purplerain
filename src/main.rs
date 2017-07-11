@@ -1,6 +1,8 @@
 extern crate ggez;
 extern crate rand;
 
+use std::io::Write;
+
 use ggez::conf;
 use ggez::event;
 use ggez::{GameResult, Context};
@@ -12,11 +14,12 @@ use drop::Updatable;
 use drop::Drawable;
 
 
-const DROP_COUNT: usize = 100;
+const DROP_COUNT: usize = 500;
 
 // Scene handles the events of ggez and contains all of the drops. It's the main state
 struct Scene {
-    drops: Vec<drop::Drop>
+    drops: Vec<drop::Drop>,
+    frames: usize
 }
 
 impl Scene {
@@ -28,7 +31,8 @@ impl Scene {
             .collect::<Vec<drop::Drop>>();
 
         Ok(Scene {
-            drops: drops
+            drops: drops,
+            frames: 0
         })
     }
 }
@@ -52,19 +56,25 @@ impl event::EventHandler for Scene {
 
         graphics::present(ctx);
 
+        self.frames += 1;
+        if self.frames % 100 == 0 {
+            println!("FPS: {}", ggez::timer::get_fps(ctx));
+        }
+
         Ok(())
     }
 }
 
 fn main() {
+    //TODO: bigger window size
     let c = conf::Conf::new();
     let ctx = &mut Context::load_from_conf("Purple Rain", "ggez", c).unwrap();
     let scene = &mut Scene::new(ctx).unwrap();
 
     match event::run(ctx, scene) {
-        Ok(_) => (),
+        Ok(()) => (),
         Err(e) => {
-            println!("error: {}", e);
+            writeln!(&mut std::io::stderr(), "error: {}", e).expect("couldn't write error to stderr");
             std::process::exit(1);
         }
     }
