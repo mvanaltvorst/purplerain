@@ -4,9 +4,10 @@ use ggez::Context;
 use ggez::graphics;
 use std::default::Default;
 use rand::distributions::{IndependentSample, Range};
+use ggez::GameResult;
 
 pub trait Drawable {
-    fn draw(&self, &mut Context);
+    fn draw(&self, &mut Context) -> GameResult<()>;
 }
 
 pub trait Updatable {
@@ -19,9 +20,11 @@ pub trait Updatable {
 pub struct Drop {
     x: f32,
     y: f32,
+    pub z: f32,
     width: f32,
     height: f32,
-    speed: f32
+    speed: f32,
+    color: graphics::Color
 }
 
 
@@ -37,14 +40,20 @@ impl Default for Drop {
         let depth = depthrange.ind_sample(&mut rng);
 
         // How far the drop is from the point of view
-        let z = depth.cbrt(); // Cube root of depth to favor low z values (drops far away)
+        let z = 20.0 - depth.cbrt(); // Cube root of depth to favor high z values (drops far away)
+        let shade_factor = map(z, 0.0, 20.0, 0.2, 1.0);
+
+        // let color = map(z, 0.0, 20.0, )
+        let color = graphics::Color::new(0.5412 * shade_factor, 0.1686 * shade_factor, 0.886 * shade_factor, 1.0);
 
         Drop {
             x: xrange.ind_sample(&mut rng),
             y: yrange.ind_sample(&mut rng),
+            z: z,
             width: map(z, 0.0, 20.0, 3.0, 9.0),
             height: map(z, 0.0, 20.0, 20.0, 60.0),
-            speed: map(z, 0.0, 20.0, 2.0, 8.0)
+            speed: map(z, 0.0, 20.0, 2.0, 8.0),
+            color: color
         }
     }
 }
@@ -64,10 +73,13 @@ impl Updatable for Drop {
 }
 
 impl Drawable for Drop {
-    fn draw(&self, ctx: &mut Context) {
+    fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         //TODO: purple color
+        graphics::set_color(ctx, self.color)?;
         let rect = graphics::Rect::new(self.x, self.y, self.width, self.height);
-        graphics::rectangle(ctx, graphics::DrawMode::Fill, rect).expect("Couldn't draw rectangle");
+        graphics::rectangle(ctx, graphics::DrawMode::Fill, rect)?;
+
+        Ok(())
     }
 }
 

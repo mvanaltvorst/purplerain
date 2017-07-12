@@ -6,3 +6,4 @@ authors = ["Maplicant <maplicant@gmail.com>"]
 [dependencies]
 ggez = "*"
 rand = "*"
+rayon = "*"
