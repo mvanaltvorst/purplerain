@@ -6,6 +6,7 @@ use std::default::Default;
 use rand::distributions::{IndependentSample, Range};
 use ggez::GameResult;
 
+
 pub trait Drawable {
     fn draw(&self, &mut Context) -> GameResult<()>;
 }
@@ -15,12 +16,11 @@ pub trait Updatable {
 }
 
 // Drop defines a raindrop in the Scene.
-// TODO: make the drop a darker color when it's further away (z is lower)
 #[derive(Copy, Clone)]
 pub struct Drop {
     x: f32,
     y: f32,
-    pub z: f32,
+    pub z: f32, // z has to be public so that Scene can sort the drops based on z-value
     width: f32,
     height: f32,
     speed: f32,
@@ -30,9 +30,9 @@ pub struct Drop {
 
 impl Default for Drop {
     fn default() -> Drop {
-        let xrange = Range::new(0.0f32, 800.0f32);
-        let depthrange = Range::new(0.0f32, 8000.0f32);
-        let yrange = Range::new(-500.0f32, -50.0f32);
+        let xrange = Range::new(0.0f32, ::WIDTH);
+        let depthrange = Range::new(0.0f32, 8000.0f32); // 8000 because 20^3 = 8000
+        let yrange = Range::new(0.0f32, ::HEIGHT);
 
         let mut rng = rand::thread_rng();
 
@@ -40,10 +40,11 @@ impl Default for Drop {
         let depth = depthrange.ind_sample(&mut rng);
 
         // How far the drop is from the point of view
-        let z = 20.0 - depth.cbrt(); // Cube root of depth to favor high z values (drops far away)
+        // z==0: far away, z==20: very close
+        let z = 20.0 - depth.cbrt(); // Cube root of depth to favor low z values (drops far away)
         let shade_factor = map(z, 0.0, 20.0, 0.2, 1.0);
 
-        // let color = map(z, 0.0, 20.0, )
+        // We shade the color purple depending on its distance (z-value)
         let color = graphics::Color::new(0.5412 * shade_factor, 0.1686 * shade_factor, 0.886 * shade_factor, 1.0);
 
         Drop {
@@ -62,9 +63,8 @@ impl Updatable for Drop {
     fn update(&mut self) {
         self.y += self.speed;
 
-        //TODO: use window height instead of y
         //TODO: use a global RNG instead of using thread_rng all the time. Maybe make it a field of `Scene`?
-        if self.y > 600.0 {
+        if self.y > ::HEIGHT {
             let mut rng = rand::thread_rng();
             let yrange = Range::new(-500.0f32, -50.0f32);
             self.y = yrange.ind_sample(&mut rng);
@@ -74,7 +74,6 @@ impl Updatable for Drop {
 
 impl Drawable for Drop {
     fn draw(&self, ctx: &mut Context) -> GameResult<()> {
-        //TODO: purple color
         graphics::set_color(ctx, self.color)?;
         let rect = graphics::Rect::new(self.x, self.y, self.width, self.height);
         graphics::rectangle(ctx, graphics::DrawMode::Fill, rect)?;
